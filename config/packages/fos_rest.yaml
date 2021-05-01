@@ -1,0 +1,9 @@
+# Read the documentation: https://symfony.com/doc/master/bundles/FOSRestBundle/index.html
+
+fos_rest:
+    body_converter:
+        enabled: true # automatic deserialization of request's content
+    view:
+        formats: { json: true, xml: false, rss: false } # let's start with only one ;)
+    serializer:
+        serialize_null: true # do not ignore null values
