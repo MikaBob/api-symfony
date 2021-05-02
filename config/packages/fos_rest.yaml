@@ -3,7 +3,13 @@
 fos_rest:
     body_converter:
         enabled: true # automatic deserialization of request's content
+
+    format_listener:
+        enabled: true
+
     view:
-        formats: { json: true, xml: false, rss: false } # let's start with only one ;)
+        view_response_listener: true
+        formats: { json: true, xml: true }
+
     serializer:
         serialize_null: true # do not ignore null values
