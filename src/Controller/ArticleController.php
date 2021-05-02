@@ -8,10 +8,12 @@ use App\Repository\ArticleRepository;
 use JMS\Serializer\SerializerInterface as JMSSerializer;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations\Get;
+use FOS\RestBundle\Controller\Annotations\Post;
 use FOS\RestBundle\Controller\Annotations\View;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ArticleController extends AbstractFOSRestController
 {
@@ -33,8 +35,9 @@ class ArticleController extends AbstractFOSRestController
 
     /**
      * @Get(
-     *     path = "/articles.{_format}/{id}",
-     *     requirements = {"id"="\d+"}
+     *      name = "api_article_get",
+     *      path = "/articles.{_format}/{id}",
+     *      requirements = {"id"="\d+"}
      * )
      * @View()
      */
@@ -47,7 +50,8 @@ class ArticleController extends AbstractFOSRestController
 
     /**
      * @Get(
-     *     path = "/articles.{_format}/{tag1}/{tag2?}"
+     *      name = "api_article_get_with_tags",
+     *      path = "/articles.{_format}/{tag1}/{tag2?}"
      * )
      * @ParamConverter("tag1", options={"mapping": {"tag1": "name"}})
      * @ParamConverter("tag2", options={"mapping": {"tag2": "name"}})
@@ -64,5 +68,20 @@ class ArticleController extends AbstractFOSRestController
         $articles[] = $tag2 === null ? [] : $tag2->getArticles();
 
         return $articles;
+    }
+
+    /**
+     * @Post("/articles", name = "api_article_post")
+     * @ParamConverter("article", converter="fos_rest.request_body")
+     * @View(StatusCode = 201)
+     */
+    public function createArticle(Article $article)
+    {
+        $em = $this->getDoctrine()->getManager();
+
+        $em->persist($article);
+        $em->flush();
+
+        return $this->view($article, Response::HTTP_CREATED, ['Location' => $this->generateUrl('api_article_get', ['id' => $article->getId(), '_format' => 'json', UrlGeneratorInterface::ABSOLUTE_URL])]);
     }
 }
