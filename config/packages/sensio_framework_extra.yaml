@@ -1,3 +1,7 @@
 sensio_framework_extra:
     router: { annotations: false } # use routing annotations of Symfony core instead
     view: { annotations: true } # avoid conflict with FOS
+
+    request:
+        converters: true
+        auto_convert: true

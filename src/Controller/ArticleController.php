@@ -3,12 +3,15 @@
 namespace App\Controller;
 
 use App\Entity\Article;
+use App\Entity\Tag;
 use App\Repository\ArticleRepository;
 use JMS\Serializer\SerializerInterface as JMSSerializer;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\View;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class ArticleController extends AbstractFOSRestController
 {
@@ -40,5 +43,26 @@ class ArticleController extends AbstractFOSRestController
         $article = $this->articleRepository->find($id);
 
         return $article;
+    }
+
+    /**
+     * @Get(
+     *     path = "/articles.{_format}/{tag1}/{tag2?}"
+     * )
+     * @ParamConverter("tag1", options={"mapping": {"tag1": "name"}})
+     * @ParamConverter("tag2", options={"mapping": {"tag2": "name"}})
+     *
+     * @View()
+     */
+    public function getArticleWithTags(Tag $tag1 = null, Tag $tag2 = null) {
+
+        if( $tag1 === null && $tag2 === null) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Tags do not exist.");
+        }
+
+        $articles = $tag1 === null ? []: $tag1->getArticles();
+        $articles[] = $tag2 === null ? [] : $tag2->getArticles();
+
+        return $articles;
     }
 }
