@@ -15,3 +15,6 @@ fos_rest:
 
     serializer:
         serialize_null: true # do not ignore null values
+
+    exception:
+        enabled: true

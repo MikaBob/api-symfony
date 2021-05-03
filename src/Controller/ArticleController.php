@@ -9,6 +9,7 @@ use JMS\Serializer\SerializerInterface as JMSSerializer;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
+use FOS\RestBundle\Controller\Annotations\Put;
 use FOS\RestBundle\Controller\Annotations\View;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,6 +35,7 @@ class ArticleController extends AbstractFOSRestController
     }
 
     /**
+     * No using the ParamConverter just to try out something else
      * @Get(
      *      name = "api_article_get",
      *      path = "/articles.{_format}/{id}",
@@ -44,6 +46,10 @@ class ArticleController extends AbstractFOSRestController
     public function getArticle($id)
     {
         $article = $this->articleRepository->find($id);
+
+        if ($article === null) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Article do not exist.");
+        }
 
         return $article;
     }
@@ -77,11 +83,64 @@ class ArticleController extends AbstractFOSRestController
      */
     public function createArticle(Article $article)
     {
+        /**
+         * @todo Validate Article
+         */
         $em = $this->getDoctrine()->getManager();
 
         $em->persist($article);
         $em->flush();
 
         return $this->view($article, Response::HTTP_CREATED, ['Location' => $this->generateUrl('api_article_get', ['id' => $article->getId(), '_format' => 'json', UrlGeneratorInterface::ABSOLUTE_URL])]);
+    }
+
+    /**
+     * @Put(
+     *      path = "/articles/{id}",
+     *      name = "api_article_put",
+     *      requirements = {"id"="\d+"}
+     * )
+     * @ParamConverter("newArticle", converter="fos_rest.request_body")
+     * @View(StatusCode = 200)
+     */
+    public function updateArticle(Article $currentArticle = null, Article $newArticle)
+    {
+        if ($currentArticle === null) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Article do not exist.");
+        }
+
+        /**
+         * @todo Validate Article
+         */
+
+        $em = $this->getDoctrine()->getManager();
+
+        $currentArticle->setTitle($newArticle->getTitle());
+        $currentArticle->setContent($newArticle->getContent());
+
+        // Reset tags
+        foreach ($currentArticle->getTags() as $tag) {
+            $currentArticle->removeTag($tag);
+        }
+
+        foreach ($newArticle->getTags() as $tag) {
+            if($tag !== null) {
+                // New tags will be created
+                if($tag->getId() === null){
+                    $newTag = new Tag();
+                    $newTag->setName($tag->getName());
+
+                    $em->persist($newTag);
+                    $tag = $newTag;
+                }
+                $currentArticle->addTag($tag);
+            }
+        }
+
+        $em->persist($currentArticle);
+
+        $em->flush();
+
+        return $currentArticle;
     }
 }
