@@ -7,6 +7,7 @@ use App\Entity\Tag;
 use App\Repository\ArticleRepository;
 use JMS\Serializer\SerializerInterface as JMSSerializer;
 use FOS\RestBundle\Controller\AbstractFOSRestController;
+use FOS\RestBundle\Controller\Annotations\Delete;
 use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
 use FOS\RestBundle\Controller\Annotations\Put;
@@ -35,7 +36,8 @@ class ArticleController extends AbstractFOSRestController
     }
 
     /**
-     * No using the ParamConverter just to try out something else
+     * No using the "@ParamConverter" just to try out something else
+     * Using "_format" for the same reason
      * @Get(
      *      name = "api_article_get",
      *      path = "/articles.{_format}/{id}",
@@ -142,5 +144,26 @@ class ArticleController extends AbstractFOSRestController
         $em->flush();
 
         return $currentArticle;
+    }
+
+    /**
+     * @Delete(
+     *      name = "api_article_delete",
+     *      path = "/articles/{id}",
+     *      requirements = {"id"="\d+"}
+     * )
+     * @View()
+     */
+    public function deleteArticle(Article $article = null)
+    {
+        if ($article === null) {
+            throw new HttpException(Response::HTTP_NOT_FOUND, "Article do not exist.");
+        }
+
+        $em = $this->getDoctrine()->getManager();
+        $em->remove($article); // Article <=> Tag relation is also removed
+        $em->flush();
+
+        return $article;
     }
 }
