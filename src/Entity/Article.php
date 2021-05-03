@@ -6,6 +6,7 @@ use App\Repository\ArticleRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints;
 
 /**
  * @ORM\Entity(repositoryClass=ArticleRepository::class)
@@ -21,21 +22,25 @@ class Article
 
     /**
      * @ORM\Column(type="string", length=255, nullable=true)
+     * @Constraints\Length(max = 255)
      */
     private $title;
 
     /**
      * @ORM\Column(type="text")
+     * @Constraints\NotBlank
      */
     private $content;
 
     /**
      * @ORM\Column(type="datetime")
+     * @Constraints\NotBlank
      */
     private $date_published;
 
     /**
      * @ORM\ManyToMany(targetEntity=Tag::class, inversedBy="articles")
+     * @Constraints\Valid()
      */
     private $tags;
 

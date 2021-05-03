@@ -16,6 +16,7 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Validator\ConstraintViolationList;
 
 class ArticleController extends AbstractFOSRestController
 {
@@ -83,11 +84,12 @@ class ArticleController extends AbstractFOSRestController
      * @ParamConverter("article", converter="fos_rest.request_body")
      * @View(StatusCode = 201)
      */
-    public function createArticle(Article $article)
+    public function createArticle(Article $article, ConstraintViolationList $validationErrors)
     {
-        /**
-         * @todo Validate Article
-         */
+        if (count($validationErrors)) {
+            return $this->view($validationErrors, Response::HTTP_BAD_REQUEST);
+        }
+
         $em = $this->getDoctrine()->getManager();
 
         $em->persist($article);
@@ -105,15 +107,15 @@ class ArticleController extends AbstractFOSRestController
      * @ParamConverter("newArticle", converter="fos_rest.request_body")
      * @View(StatusCode = 200)
      */
-    public function updateArticle(Article $currentArticle = null, Article $newArticle)
+    public function updateArticle(Article $currentArticle = null, Article $newArticle, ConstraintViolationList $validationErrors)
     {
         if ($currentArticle === null) {
             throw new HttpException(Response::HTTP_NOT_FOUND, "Article do not exist.");
         }
 
-        /**
-         * @todo Validate Article
-         */
+        if (count($validationErrors)) {
+            return $this->view($validationErrors, Response::HTTP_BAD_REQUEST);
+        }
 
         $em = $this->getDoctrine()->getManager();
 
