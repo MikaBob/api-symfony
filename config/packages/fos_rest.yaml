@@ -20,3 +20,5 @@ fos_rest:
 
     exception:
         enabled: true
+
+    param_fetcher_listener: true

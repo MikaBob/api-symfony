@@ -12,6 +12,8 @@ use FOS\RestBundle\Controller\Annotations\Get;
 use FOS\RestBundle\Controller\Annotations\Post;
 use FOS\RestBundle\Controller\Annotations\Put;
 use FOS\RestBundle\Controller\Annotations\View;
+use FOS\RestBundle\Controller\Annotations\QueryParam;
+use FOS\RestBundle\Request\ParamFetcherInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -77,6 +79,37 @@ class ArticleController extends AbstractFOSRestController
         $articles[] = $tag2 === null ? [] : $tag2->getArticles();
 
         return $articles;
+    }
+
+    /**
+     * @Get("/articles", name="api_articles")
+     * @QueryParam(
+     *     name="keyword",
+     *     requirements="[a-zA-Z0-9]+",
+     *     nullable=true,
+     *     description="The keyword to search for."
+     * )
+     * @QueryParam(
+     *     name="order",
+     *     requirements="asc|desc",
+     *     default="asc",
+     *     description="Sort order (asc or desc)"
+     * )
+     * @QueryParam(
+     *     name="limit",
+     *     requirements="\d+",
+     *     default="10",
+     *     description="Max number of movies per page."
+     * )
+     * @View()
+     */
+    public function getArticlesList(ParamFetcherInterface $paramFetcher)
+    {
+        return $this->articleRepository->listBy(
+            $paramFetcher->get('keyword'),
+            $paramFetcher->get('order'),
+            $paramFetcher->get('limit')
+        );
     }
 
     /**

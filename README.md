@@ -11,7 +11,7 @@ Most of the configuration are default.
 ``` git clone ```
 
 ``` cd api-symfony ```
- 
+
 ``` composer install ```
 
 ``` php bin/console doctrine:database:create ```
@@ -20,9 +20,11 @@ Most of the configuration are default.
 
 ``` php bin/console doctrine:fixtures:load ```
 
-# Routes
+# Routes + json sample
 
 - GET /articles/4
+
+- GET /articles?order=desc&limit=2&keyword=art
 
 - POST /articles
 
@@ -49,7 +51,7 @@ Most of the configuration are default.
         {
             "id": 4,
             "name": "Tag renamed"
-        }, 
+        },
         {
             "name": "Tag 10"
         }
